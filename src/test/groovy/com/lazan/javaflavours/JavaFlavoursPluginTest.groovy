@@ -1,24 +1,21 @@
 package com.lazan.javaflavours
 
+import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
+import spock.lang.Specification
+
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
-import org.gradle.api.Project;
-import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.TaskOutcome;
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
-import java.util.regex.*
-import static org.junit.Assert.*
-
-
-import spock.lang.Specification
+import static org.junit.Assert.assertEquals
 
 class JavaFlavoursPluginTest extends Specification {
 
-	@Rule final TemporaryFolder testProjectDir = new TemporaryFolder()
-	
+	@Rule
+	final TemporaryFolder testProjectDir = new TemporaryFolder()
+
 	def setup() {
 		writeFile('gradle.properties', getResourceUrl("testkit-gradle.properties").text)
 	}
@@ -28,13 +25,13 @@ class JavaFlavoursPluginTest extends Specification {
 		if (url == null) throw new RuntimeException("No such resource $path")
 		return url
 	}
-	
+
 	void writeFile(String path, String text) {
 		File file = new File(testProjectDir.root, path)
 		file.parentFile.mkdirs()
 		file.text = text
 	}
-	
+
 	void assertZipEntries(String zipPath, List<String> expectedEntries) {
 		File zipFile = new File(testProjectDir.root, zipPath)
 		ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFile))
@@ -47,12 +44,12 @@ class JavaFlavoursPluginTest extends Specification {
 		}
 		assertEquals(expectedEntries as Set, actualEntries)
 	}
-	
+
 	def "Test tasks"() {
 		given:
-			writeFile("build.gradle", """
+		writeFile("build.gradle", """
 				plugins {
-					id 'com.lazan.javaflavours'
+					id 'com.lazan.javaflavours'					
 				}
 				version = '1.0-SNAPSHOT'
 				repositories {
@@ -76,18 +73,18 @@ class JavaFlavoursPluginTest extends Specification {
 				}
 			""")
 		when:
-			def result = GradleRunner.create()
+		def result = GradleRunner.create()
 				.withProjectDir(testProjectDir.root)
 				.withArguments('performAssertions', '--stacktrace')
 				.withPluginClasspath()
 				.build()
 		then:
-			result.task(":performAssertions").outcome == TaskOutcome.SUCCESS
+		result.task(":performAssertions").outcome == TaskOutcome.SUCCESS
 	}
-	
+
 	def "Test configurations"() {
 		given:
-			writeFile("build.gradle", """
+		writeFile("build.gradle", """
 				plugins {
 					id 'com.lazan.javaflavours'
 				}
@@ -129,16 +126,70 @@ class JavaFlavoursPluginTest extends Specification {
 				}
 			""")
 		when:
-			def result = GradleRunner.create()
+		def result = GradleRunner.create()
 				.withProjectDir(testProjectDir.root)
 				.withArguments('performAssertions', '--stacktrace')
 				.withPluginClasspath()
 				.build()
 
 		then:
-			result.task(":performAssertions").outcome == TaskOutcome.SUCCESS
+		result.task(":performAssertions").outcome == TaskOutcome.SUCCESS
 	}
-	
+
+	def "Test configurations with Implementation and Api"() {
+		given:
+		writeFile("build.gradle", """
+				plugins {
+					id 'com.lazan.javaflavours'
+				}
+				version = '1.0-SNAPSHOT'
+				repositories {
+					mavenCentral()
+				}
+				javaFlavours {
+					flavour 'one'
+					flavour 'two'
+				}
+				dependencies {								    
+					implementation 'org.springframework:spring-context:4.3.2.RELEASE'
+					testImplementation 'junit:junit:4.12'
+					oneImplementation 'org.hibernate:hibernate-core:5.2.8.Final'
+					oneTestImplementation 'org.mockito:mockito-core:2.7.12'
+				}
+				task performAssertions {
+					doLast {
+						Set<String> oneRuntime = configurations.oneRuntimeClasspath.files.collect({ it.name }) as Set
+						Set<String> oneTestRuntime = configurations.oneTestRuntimeClasspath.files.collect({ it.name }) as Set
+						Set<String> twoRuntime = configurations.twoRuntimeClasspath.files.collect({ it.name }) as Set
+						Set<String> twoTestRuntime = configurations.twoTestRuntimeClasspath.files.collect({ it.name }) as Set
+
+						assert oneRuntime.contains('spring-context-4.3.2.RELEASE.jar')
+						assert oneRuntime.contains('hibernate-core-5.2.8.Final.jar')
+						assert oneTestRuntime.contains('spring-context-4.3.2.RELEASE.jar')
+						assert oneTestRuntime.contains('hibernate-core-5.2.8.Final.jar')
+						assert oneTestRuntime.contains('junit-4.12.jar')
+						assert oneTestRuntime.contains('mockito-core-2.7.12.jar')
+			
+						assert twoRuntime.contains('spring-context-4.3.2.RELEASE.jar')
+						assert !twoRuntime.contains('hibernate-core-5.2.8.Final.jar')
+						assert twoTestRuntime.contains('spring-context-4.3.2.RELEASE.jar')
+						assert !twoTestRuntime.contains('hibernate-core-5.2.8.Final.jar')
+						assert twoTestRuntime.contains('junit-4.12.jar')
+						assert !twoTestRuntime.contains('mockito-core-2.7.12.jar')
+					}
+				}
+			""")
+		when:
+		def result = GradleRunner.create()
+				.withProjectDir(testProjectDir.root)
+				.withArguments('performAssertions', '--stacktrace')
+				.withPluginClasspath()
+				.build()
+
+		then:
+		result.task(":performAssertions").outcome == TaskOutcome.SUCCESS
+	}
+
 	def "Test two flavours compile, test and jar"() {
 		given:
 		writeFile("settings.gradle", "rootProject.name = 'test-project'")
@@ -155,7 +206,7 @@ class JavaFlavoursPluginTest extends Specification {
 				flavour 'blue'
 			}
 			dependencies {
-				testCompile 'junit:junit:4.12'
+				testImplementation 'junit:junit:4.12'
 			}
 			tasks.withType(Test) {
 			    testLogging.showStandardStreams = true
@@ -198,18 +249,18 @@ class JavaFlavoursPluginTest extends Specification {
 		}
 		when:
 		def result = GradleRunner.create()
-			.withProjectDir(testProjectDir.root)
-			.withArguments('build', '--stacktrace')
-			.withPluginClasspath()
-			.build()
+				.withProjectDir(testProjectDir.root)
+				.withArguments('build', '--stacktrace')
+				.withPluginClasspath()
+				.build()
 
 		then:
 		result.task(":build").outcome == TaskOutcome.SUCCESS
-		
+
 		result.output.contains('class=foo.MainTest, found=[foo/Main.class, main.txt, foo/MainTest.class, mainTest.txt], notFound=[foo/Red.class, red.txt, foo/RedTest.class, redTest.txt, foo/Blue.class, blue.txt, foo/BlueTest.class, blueTest.txt]')
 		result.output.contains('class=foo.RedTest, found=[foo/Main.class, main.txt, foo/MainTest.class, mainTest.txt, foo/Red.class, red.txt, foo/RedTest.class, redTest.txt], notFound=[foo/Blue.class, blue.txt, foo/BlueTest.class, blueTest.txt]')
 		result.output.contains('class=foo.BlueTest, found=[foo/Main.class, main.txt, foo/MainTest.class, mainTest.txt, foo/Blue.class, blue.txt, foo/BlueTest.class, blueTest.txt], notFound=[foo/Red.class, red.txt, foo/RedTest.class, redTest.txt]')
-		
+
 		assertZipEntries("build/libs/test-project-1.0-SNAPSHOT.jar", ['META-INF/MANIFEST.MF', 'foo/Main.class', 'main.txt'])
 		assertZipEntries("build/libs/test-project-1.0-SNAPSHOT-red.jar", ['META-INF/MANIFEST.MF', 'foo/Main.class', 'main.txt', 'foo/Red.class', 'red.txt'])
 		assertZipEntries("build/libs/test-project-1.0-SNAPSHOT-blue.jar", ['META-INF/MANIFEST.MF', 'foo/Main.class', 'main.txt', 'foo/Blue.class', 'blue.txt'])
