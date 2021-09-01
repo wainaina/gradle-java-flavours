@@ -6,7 +6,7 @@ plugins {
 	id 'java-gradle-plugin'
 }
 
-group = 'com.lazan'
+group = 'com.azan'
 version = file('version.txt').text.trim()
 
 repositories {
@@ -62,6 +62,8 @@ gradlePlugin {
 	plugins {
 		javaFlavours {
 			id = 'com.azan.javaflavours'
+			displayName = 'Add Android Style flavours to your java projects'
+            		description = 'A plugin that adds Android style flavours to your java projects'
 			implementationClass = 'com.lazan.javaflavours.JavaFlavoursPlugin'
 		}
 	}
