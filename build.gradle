@@ -61,7 +61,7 @@ task createTestkitFiles {
 gradlePlugin {
 	plugins {
 		javaFlavours {
-			id = 'com.lazan.javaflavours'
+			id = 'com.azan.javaflavours'
 			implementationClass = 'com.lazan.javaflavours.JavaFlavoursPlugin'
 		}
 	}
