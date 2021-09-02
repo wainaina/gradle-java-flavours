@@ -1,4 +1,4 @@
-# gradle-java-flavours [![Build Status](https://travis-ci.org/uklance/gradle-java-flavours.svg?branch=master)](https://travis-ci.org/uklance/gradle-java-flavours) [![Coverage Status](https://coveralls.io/repos/github/uklance/gradle-java-flavours/badge.svg?branch=master)](https://coveralls.io/github/uklance/gradle-java-flavours?branch=master)
+# gradle-java-flavours [![Build Status](https://travis-ci.org/uklance/gradle-java-flavours.svg?branch=master)](https://travis-ci.org/uklance/gradle-java-flavours) [![Coverage Status](https://coveralls.io/repos/github/wainaina/gradle-java-flavours/badge.svg?branch=master)](https://coveralls.io/github/wainaina/gradle-java-flavours?branch=master)
 
 A Gradle plugin to add Android style flavours to a Java project
 
@@ -6,7 +6,7 @@ A Gradle plugin to add Android style flavours to a Java project
 
 ```groovy
 plugins {
-  id "com.lazan.javaflavours" version "1.2"
+  id "com.github.wainaina.javaflavours" version "1.0"
 }
 javaFlavours {
     flavour 'free'
@@ -16,14 +16,14 @@ javaFlavours {
     testResourcesPathResolver = { String flavour -> "src/${flavour}-test/resources" }
 }
 dependencies {
-    compile         'aaa:aaa:1.0'
-    freeCompile     'bbb:bbb:2.0'
-    freeTestCompile 'ccc:ccc:3.0'
-    paidRuntime     'ddd:ddd:4.0'
+    implementation         'aaa:aaa:1.0'
+    freeImplementation     'bbb:bbb:2.0'
+    freeTestImplementation 'ccc:ccc:3.0'
+    paidRuntime            'ddd:ddd:4.0'
 }
 ```
 
-You find detailed installation instructions at https://plugins.gradle.org/plugin/com.lazan.javaflavours.
+You find detailed installation instructions at https://plugins.gradle.org/plugin/com.github.wainaina.javaflavours.
 
 ## Directories:
 
@@ -37,7 +37,8 @@ You find detailed installation instructions at https://plugins.gradle.org/plugin
 - `src/<flavour>Test/resources` - Flavour specific test resources (can be configured)
 
 ## Tasks
-
+- `implmentation<flavour>Java`
+- `testImplmentation<flavour>Java`
 - `compile<flavour>Java`
 - `compile<flavour>TestJava`
 - `<flavour>Classes`

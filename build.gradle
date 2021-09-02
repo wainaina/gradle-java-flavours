@@ -1,14 +1,13 @@
 plugins {
 	id 'jacoco'
-	id 'com.github.kt3k.coveralls' version '2.6.3'
+	id 'com.github.kt3k.coveralls' version '2.8.2'
 	id 'groovy'
 	id 'maven-publish'
-	id "com.gradle.plugin-publish" version '0.9.7'
-	id 'com.jfrog.bintray' version '1.7'
 	id 'java-gradle-plugin'
+	id "com.gradle.plugin-publish" version "0.15.0"
 }
 
-group = 'com.lazan'
+group = 'com.github.wainaina'
 version = file('version.txt').text.trim()
 
 repositories {
@@ -20,12 +19,12 @@ configurations {
 }
 
 dependencies {
-	testCompile 'junit:junit:4.12'
-	testCompile 'org.mockito:mockito-all:1.10.19'
-	testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
-        exclude module: 'groovy-all'
-    }
-	testRuntime files("$buildDir/testkit")
+	testImplementation 'junit:junit:4.12'
+	testImplementation 'org.mockito:mockito-all:1.10.19'
+	testImplementation('org.spockframework:spock-core:1.2-groovy-2.5') {
+		exclude module: 'groovy-all'
+	}
+	testRuntimeOnly files("$buildDir/testkit")
 	jacocoRuntime "org.jacoco:org.jacoco.agent:${jacoco.toolVersion}:runtime"
 }
 
@@ -61,43 +60,25 @@ task createTestkitFiles {
 }
 
 pluginBundle {
-	website = 'https://github.com/uklance/gradle-java-flavours'
-	vcsUrl = 'https://github.com/uklance/gradle-java-flavours.git'
-	description = 'Android style flavours in a java project'
-	tags = ['flavor', 'flavour', 'flavors', 'flavours', 'java']
+    website = 'https://github.com/wainaina/gradle-java-flavours/'
+    vcsUrl = 'https://github.com/wainaina/gradle-java-flavours'
+    tags = ['javaflavour', 'buildVariants']
+}
 
+gradlePlugin {
 	plugins {
 		javaFlavours {
-			id = 'com.lazan.javaflavours'
-			displayName = 'Java Flavours Plugin'
+			id = 'com.github.wainaina'
+			displayName = 'Add Android Style flavours to your java projects'
+			description = 'A plugin that adds Android style flavours to your java projects'
+			implementationClass = 'com.lazan.javaflavours.JavaFlavoursPlugin'
 		}
 	}
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-        }
-    }
-}
+tasks.publish.dependsOn(build)
 
-bintray {
-	user = project.properties['bintrayUser']
-	key = project.properties['bintrayKey']
-	publications = ['maven']
-	publish = true
-	pkg {
-		repo = 'maven'
-		name = project.name
-		licenses = ['Apache-2.0']
-		vcsUrl = 'https://github.com/uklance/gradle-java-flavours.git'
-		githubRepo = 'uklance/java-flavours'
-		labels = ['flavor', 'flavour', 'flavors', 'flavours', 'java', 'gradle', 'plugin']
-		version {
-			name = project.version
-			released = new Date()
-			desc = "Gradle Java Flavours Plugin ${project.version}"
-		}
-	}
+task sourcesJar(type: Jar, dependsOn: classes) {
+	classifier = 'sources'
+	from sourceSets.main.allSource
 }
