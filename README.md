@@ -6,7 +6,7 @@ A Gradle plugin to add Android style flavours to a Java project
 
 ```groovy
 plugins {
-  id "com.azan.javaflavours" version "1.0"
+  id "com.github.wainaina.javaflavours" version "1.0"
 }
 javaFlavours {
     flavour 'free'
@@ -23,7 +23,7 @@ dependencies {
 }
 ```
 
-You find detailed installation instructions at https://plugins.gradle.org/plugin/com.azan.javaflavours.
+You find detailed installation instructions at https://plugins.gradle.org/plugin/com.github.wainaina.javaflavours.
 
 ## Directories:
 
