@@ -4,9 +4,10 @@ plugins {
 	id 'groovy'
 	id 'maven-publish'
 	id 'java-gradle-plugin'
+	id "com.gradle.plugin-publish" version "0.15.0"
 }
 
-group = 'com.azan'
+group = 'com.github.wainaina'
 version = file('version.txt').text.trim()
 
 repositories {
@@ -58,12 +59,18 @@ task createTestkitFiles {
 	}
 }
 
+pluginBundle {
+    website = 'https://github.com/wainaina/gradle-java-flavours/'
+    vcsUrl = 'https://github.com/wainaina/gradle-java-flavours'
+    tags = ['javaflavour', 'buildVariants']
+}
+
 gradlePlugin {
 	plugins {
 		javaFlavours {
-			id = 'com.azan.javaflavours'
+			id = 'com.github.wainaina'
 			displayName = 'Add Android Style flavours to your java projects'
-            		description = 'A plugin that adds Android style flavours to your java projects'
+			description = 'A plugin that adds Android style flavours to your java projects'
 			implementationClass = 'com.lazan.javaflavours.JavaFlavoursPlugin'
 		}
 	}
